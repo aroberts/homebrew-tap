@@ -1,8 +1,8 @@
 class Keymaster < Formula
   desc "TouchID-protected keychain access for scripts"
   homepage "https://github.com/aroberts/keymaster"
-  url "https://github.com/aroberts/keymaster/archive/refs/tags/v0.3.0.tar.gz"
-  sha256 "7c2ca085fd53dddb00a6e343cbf2e932ef2f2632c9a8457671ab23e551ea626e"
+  url "https://github.com/aroberts/keymaster/archive/refs/tags/v0.4.0.tar.gz"
+  sha256 "b20e777825e90f9b1560029404b8790053a05ec56dd447c71520e9a3f6aaf83f"
   license "MIT"
   head "https://github.com/aroberts/keymaster.git", branch: "master"
 
