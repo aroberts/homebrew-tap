@@ -1,0 +1,63 @@
+name: Update grafana-cli formula
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check upstream release
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag=$(gh api repos/matiasvillaverde/grafana-cli/releases/latest --jq .tag_name)
+          upstream="${tag#v}"
+          current=$(grep -E '^\s*version "' Formula/grafana-cli.rb | sed -E 's/.*version "([^"]+)".*/\1/')
+          echo "tag=$tag" >>"$GITHUB_OUTPUT"
+          echo "upstream=$upstream" >>"$GITHUB_OUTPUT"
+          echo "current=$current" >>"$GITHUB_OUTPUT"
+          if [ "$upstream" = "$current" ]; then
+            echo "changed=false" >>"$GITHUB_OUTPUT"
+            echo "grafana-cli already at $current"
+          else
+            echo "changed=true" >>"$GITHUB_OUTPUT"
+            echo "grafana-cli: $current -> $upstream"
+          fi
+
+      - name: Download and install new formula
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.check.outputs.tag }}
+        run: |
+          set -euo pipefail
+          tmp=$(mktemp)
+          gh release download "$TAG" \
+            --repo matiasvillaverde/grafana-cli \
+            --pattern grafana-cli.rb \
+            --output "$tmp" \
+            --clobber
+          head -n1 "$tmp" | grep -q '^class GrafanaCli < Formula$'
+          mv "$tmp" Formula/grafana-cli.rb
+
+      - name: Commit and push
+        if: steps.check.outputs.changed == 'true'
+        env:
+          TAG: ${{ steps.check.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/grafana-cli.rb
+          git commit -m "Update grafana-cli to $TAG"
+          git push
