@@ -9,10 +9,22 @@ class Keymaster < Formula
   depends_on :macos
 
   def install
-    system "swiftc", "keymaster.swift", "-o", "keymaster", "-O"
+    system "swiftc", "keymaster.swift", "-o", "keymaster", "-O",
+           "-framework", "LocalAuthentication", "-framework", "Security"
     bin.install "keymaster"
     bin.install "bin/keymaster-askpass"
     bin.install "bin/keymaster-ssh"
+    # Off PATH: a one-shot maintenance command, surfaced via caveats below.
+    libexec.install "bin/keymaster-resign"
+  end
+
+  def caveats
+    <<~EOS
+      If you sign keymaster with a self-signed identity to keep the Keychain
+      "Always Allow" trust across upgrades (see the project README), re-sign
+      after each upgrade:
+        #{opt_libexec}/keymaster-resign
+    EOS
   end
 
   test do
