@@ -20,9 +20,10 @@ class Keymaster < Formula
 
   def caveats
     <<~EOS
-      If you sign keymaster with a self-signed identity to keep the Keychain
-      "Always Allow" trust across upgrades (see the project README), re-sign
-      after each upgrade:
+      Homebrew builds keymaster with an ad-hoc signature, so the Keychain
+      "Always Allow" trust breaks on every upgrade. To keep it, sign with an
+      Apple Development identity (see the project README) and re-sign after
+      each upgrade:
         #{opt_libexec}/keymaster-resign
     EOS
   end
