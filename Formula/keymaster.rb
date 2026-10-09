@@ -9,12 +9,8 @@ class Keymaster < Formula
   depends_on :macos
 
   def install
-    # master splits the source into Sources/; v0.8.0 and earlier ship one
-    # keymaster.swift. Drop the fallback once a release with Sources/ is out.
-    sources = Dir["Sources/*.swift"]
-    sources = ["keymaster.swift"] if sources.empty?
     # swiftc links the imported frameworks itself, as build.sh relies on.
-    system "swiftc", *sources, "-o", "keymaster", "-O"
+    system "swiftc", *Dir["Sources/*.swift"], "-o", "keymaster", "-O"
     bin.install "keymaster"
     bin.install "bin/keymaster-askpass"
     bin.install "bin/keymaster-ssh"
